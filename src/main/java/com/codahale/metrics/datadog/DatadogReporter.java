@@ -1,4 +1,4 @@
-package com.yammer.metrics.reporting;
+package com.codahale.metrics.datadog;
 
 import java.io.IOException;
 import java.util.EnumSet;
@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.SortedMap;
 
+import com.yammer.metrics.reporting.AbstractPollingReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +29,8 @@ import com.yammer.metrics.core.Sampling;
 import com.yammer.metrics.core.Summarizable;
 import com.yammer.metrics.core.Timer;
 import com.yammer.metrics.core.VirtualMachineMetrics;
-import com.yammer.metrics.reporting.Transport.Request;
-import com.yammer.metrics.reporting.model.DatadogCounter;
-import com.yammer.metrics.reporting.model.DatadogGauge;
+import com.codahale.metrics.datadog.model.DatadogCounter;
+import com.codahale.metrics.datadog.model.DatadogGauge;
 import com.yammer.metrics.stats.Snapshot;
 
 public class DatadogReporter extends AbstractPollingReporter implements
@@ -70,7 +70,7 @@ public class DatadogReporter extends AbstractPollingReporter implements
   @Override
   public void run() {
     try {
-      Request request = null;
+      Transport.Request request = null;
       try {
         request = transport.prepare();
         jsonOut = jsonFactory.createGenerator(request.getBodyWriter());

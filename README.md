@@ -4,8 +4,8 @@ Simple Metrics reporter that sends reporting info to Datadog.
 ## Usage
 
 ~~~scala
-import com.yammer.metrics.reporting.DatadogReporter
-import com.yammer.metrics.reporting.DatadogReporter.Expansions._
+import com.codahale.metrics.datadog.DatadogReporter
+import com.codahale.metrics.datadog.DatadogReporter.Expansions._
 
 ...
 val expansions = EnumSet.of(COUNT, RATE_1_MINUTE, RATE_15_MINUTE, MEDIAN, P95, P99)

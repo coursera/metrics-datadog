@@ -1,4 +1,4 @@
-package com.yammer.metrics.reporting.model;
+package com.codahale.metrics.datadog.model;
 
 
 public class DatadogGauge extends DatadogSeries<Number> {
