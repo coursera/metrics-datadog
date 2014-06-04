@@ -9,7 +9,7 @@ import com.codahale.metrics.datadog.DatadogReporter.Expansions._
 
 ...
 val expansions = EnumSet.of(COUNT, RATE_1_MINUTE, RATE_15_MINUTE, MEDIAN, P95, P99)
-val reporter = new DatadogReporter.Builder()
+val reporter = new DatadogReporter.forRegistry(metricsRegistry)
   .withEC2Host()
   .withApiKey(apiKey)
   .withExpansions(expansions)

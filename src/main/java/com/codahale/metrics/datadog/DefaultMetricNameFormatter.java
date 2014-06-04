@@ -1,19 +1,11 @@
 package com.codahale.metrics.datadog;
 
-import com.yammer.metrics.core.MetricName;
-
 public class DefaultMetricNameFormatter implements MetricNameFormatter {
 
-  public String format(MetricName name, String... path) {
-    final StringBuilder sb = new StringBuilder(name.getGroup());
-    sb.append('.');
-    sb.append(name.getType()).append('.');
+  public String format(String name, String... path) {
+    final StringBuilder sb = new StringBuilder();
 
-    if (name.hasScope()) {
-      sb.append(name.getScope()).append('.');
-    }
-
-    String[] metricParts = name.getName().split("\\[");
+    String[] metricParts = name.split("\\[");
     sb.append(metricParts[0]);
 
     for (String part : path) {
