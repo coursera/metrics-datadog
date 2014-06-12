@@ -33,8 +33,8 @@
         </developer>
     </developers>
     <properties>
-        <metrics.version>2.2.0</metrics.version>
-        <jackson.version>2.2.2</jackson.version>
+        <metrics.version>3.0.1</metrics.version>
+        <jackson.version>2.3.2</jackson.version>
     </properties>
     <build>
         <plugins>
@@ -80,7 +80,7 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>com.yammer.metrics</groupId>
+            <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-core</artifactId>
             <version>${metrics.version}</version>
             <type>jar</type>
