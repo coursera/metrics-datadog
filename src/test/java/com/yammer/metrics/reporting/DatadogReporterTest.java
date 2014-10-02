@@ -3,7 +3,6 @@ package com.yammer.metrics.reporting;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -57,8 +56,7 @@ public class DatadogReporterTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testBasicSend() throws JsonParseException, JsonMappingException,
-                                     IOException {
+  public void testBasicSend() throws IOException {
     dd.printVmMetrics = false;
 
     Counter counter = metricsRegistry.newCounter(DatadogReporterTest.class,
@@ -80,7 +78,7 @@ public class DatadogReporterTest {
     dd.run();
     assertEquals(1, transport.numRequests);
 
-    String body = new String(transport.lastRequest.getPostBody(), "UTF-8");
+    String body = transport.lastRequest.getPostBody();
     Map<String, Object> request = new ObjectMapper().readValue(body,
                                                                HashMap.class);
 
@@ -132,7 +130,7 @@ public class DatadogReporterTest {
     dd.run();
     assertEquals(1, transport.numRequests);
 
-    String body = new String(transport.lastRequest.getPostBody(), "UTF-8");
+    String body = transport.lastRequest.getPostBody();
     Map<String, Object> request = new ObjectMapper().readValue(body,
                                                                HashMap.class);
     List<Object> series = (List<Object>) request.get("series");
@@ -147,7 +145,7 @@ public class DatadogReporterTest {
   }
 
   @Test
-  public void testSupplyHostname() throws UnsupportedEncodingException {
+  public void testSupplyHostname() throws IOException {
     Counter counter = metricsRegistry.newCounter(DatadogReporterTest.class,
                                                  "my.counter");
     counter.inc();
@@ -155,11 +153,11 @@ public class DatadogReporterTest {
     assertEquals(0, transport.numRequests);
     ddNoHost.run();
     assertEquals(1, transport.numRequests);
-    String noHostBody = new String(transport.lastRequest.getPostBody(), "UTF-8");
+    String noHostBody = transport.lastRequest.getPostBody();
 
     dd.run();
     assertEquals(2, transport.numRequests);
-    String hostBody = new String(transport.lastRequest.getPostBody(), "UTF-8");
+    String hostBody = transport.lastRequest.getPostBody();
 
     assertFalse(noHostBody.indexOf("\"host\":\"hostname\"") > -1);
     assertTrue(hostBody.indexOf("\"host\":\"hostname\"") > -1);
@@ -174,7 +172,7 @@ public class DatadogReporterTest {
 
     ddNoHost.printVmMetrics = false;
     ddNoHost.run();
-    String body = new String(transport.lastRequest.getPostBody(), "UTF-8");
+    String body = transport.lastRequest.getPostBody();
 
     Map<String, Object> request = new ObjectMapper().readValue(body,
                                                                HashMap.class);

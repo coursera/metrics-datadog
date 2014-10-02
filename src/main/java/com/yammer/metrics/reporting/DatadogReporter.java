@@ -1,8 +1,5 @@
 package com.yammer.metrics.reporting;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.*;
 import com.yammer.metrics.core.Timer;
@@ -33,10 +30,7 @@ public class DatadogReporter extends AbstractPollingReporter implements
   private final VirtualMachineMetrics vm;
   private final MetricNameFormatter metricNameFormatter;
   private final List<String> tags;
-
-  private static final JsonFactory jsonFactory = new JsonFactory();
-  private static final ObjectMapper mapper = new ObjectMapper(jsonFactory);
-  private JsonGenerator jsonOut;
+  private Request request;
 
   public DatadogReporter(MetricsRegistry metricsRegistry,
                          MetricPredicate predicate, VirtualMachineMetrics vm, Transport transport,
@@ -59,13 +53,8 @@ public class DatadogReporter extends AbstractPollingReporter implements
   @Override
   public void run() {
     try {
-      Request request = null;
       try {
         request = transport.prepare();
-        jsonOut = jsonFactory.createGenerator(request.getBodyWriter());
-        jsonOut.writeStartObject();
-        jsonOut.writeFieldName("series");
-        jsonOut.writeStartArray();
       } catch (IOException ioe) {
         LOG.error("Could not prepare request", ioe);
         return;
@@ -76,15 +65,7 @@ public class DatadogReporter extends AbstractPollingReporter implements
         pushVmMetrics(epoch);
       }
       pushRegularMetrics(epoch);
-
-      try {
-        jsonOut.writeEndArray();
-        jsonOut.writeEndObject();
-        jsonOut.flush();
-        request.send();
-      } catch (Exception e) {
-        LOG.error("Error sending metrics", e);
-      }
+      request.send();
     } catch (Throwable t) {
       LOG.error("Error processing metrics", t);
     }
@@ -194,7 +175,7 @@ public class DatadogReporter extends AbstractPollingReporter implements
   private void pushCounter(String name, Long count, Long epoch) {
     DatadogCounter counter = new DatadogCounter(name, count, epoch, host, this.tags);
     try {
-      mapper.writeValue(jsonOut, counter);
+      request.addCounter(counter);
     } catch (Exception e) {
       LOG.error("Error writing counter", e);
     }
@@ -212,9 +193,19 @@ public class DatadogReporter extends AbstractPollingReporter implements
   private void sendGauge(String name, Number count, Long epoch) {
     DatadogGauge gauge = new DatadogGauge(name, count, epoch, host, this.tags);
     try {
-      mapper.writeValue(jsonOut, gauge);
+      request.addGauge(gauge);
     } catch (Exception e) {
       LOG.error("Error writing gauge", e);
+    }
+  }
+
+  @Override
+  public void shutdown() {
+    super.shutdown();
+    try {
+      transport.close();
+    } catch (IOException e) {
+      LOG.error("Error closing the datadog transport, ignored.", e);
     }
   }
 
@@ -260,6 +251,7 @@ public class DatadogReporter extends AbstractPollingReporter implements
     private MetricNameFormatter metricNameFormatter = new DefaultMetricNameFormatter();
     private List<String> tags = new ArrayList<String>();
     private MetricsRegistry metricsRegistry = Metrics.defaultRegistry();
+    private Transport transport = null;
 
     public Builder withHost(String host) {
       this.host = host;
@@ -289,8 +281,7 @@ public class DatadogReporter extends AbstractPollingReporter implements
     /**
      * Tags that would be sent to datadog with each and every metrics. This could be used to set global metrics
      * like version of the app, environment etc.
-     * @param tags List of tags eg: [env:prod, version:1.0.1] etc
-     * @return
+     * @param tags List of tags eg: [env:prod, version:1.0.1, name:kafka_client] etc
      */
     public Builder withTags(List<String> tags) {
         this.tags = tags;
@@ -317,12 +308,27 @@ public class DatadogReporter extends AbstractPollingReporter implements
       return this;
     }
 
+    /**
+     * The transport mechanism to push metrics to datadog. Supports http webservice and UDP dogstatsd protocol
+     * as of now.
+     *
+     * @see HttpTransport
+     * @see com.yammer.metrics.reporting.transport.UdpTransport
+     */
+    public Builder withTransport(Transport transport) {
+      this.transport = transport;
+      return this;
+    }
+
     public DatadogReporter build() {
+      if (transport == null) {
+        this.transport = new HttpTransport(apiKey);
+      }
       return new DatadogReporter(
         metricsRegistry,
         this.predicate,
         VirtualMachineMetrics.getInstance(),
-        new HttpTransport(apiKey),
+        transport,
         this.clock,
         this.host,
         this.expansions,

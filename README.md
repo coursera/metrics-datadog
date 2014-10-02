@@ -1,5 +1,5 @@
 # Metrics Datadog Reporter
-Simple Metrics reporter that sends reporting info to Datadog.
+Simple Metrics reporter that sends reporting info to Datadog, supports both http and udp.
 
 ## Usage
 
@@ -17,6 +17,17 @@ val reporter = new DatadogReporter.Builder()
   .build()
 
 reporter.start(10, TimeUnit.SECONDS)
+~~~
+
+Example of using UDP transport:
+
+~~~scala
+...
+val udpTransport = new UdpTransport.Builder().build()
+val reporter = 
+    ...
+    .withTransport(udpTransport)
+    ...
 ~~~
 
 

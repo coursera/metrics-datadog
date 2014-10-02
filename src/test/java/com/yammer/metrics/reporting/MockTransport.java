@@ -1,53 +1,31 @@
 package com.yammer.metrics.reporting;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 public class MockTransport implements Transport {
 
   public MockRequest lastRequest;
   public int numRequests = 0;
-  public OutputStream out;
-
-  public MockTransport(OutputStream out) {
-    this.out = out;
-  }
 
   public MockTransport() {
-
   }
 
-  public static class MockRequest implements Request {
+  public void close() throws IOException {
+  }
 
-    private final OutputStream out;
+  public static class MockRequest extends HttpTransport.HttpRequest {
 
-    MockRequest(OutputStream out) {
-      if (out != null) {
-        this.out = out;
-      } else {
-        this.out = new ByteArrayOutputStream();
-      }
+    public MockRequest(HttpTransport transport) throws IOException {
+      super(transport);
     }
 
-    public OutputStream getBodyWriter() {
-      return out;
-    }
-
-    public void send() throws Exception {
-
-    }
-
-    public byte[] getPostBody() {
-      if (out instanceof ByteArrayOutputStream) {
-        return ((ByteArrayOutputStream) out).toByteArray();
-      }
-      return null;
+    public String getPostBody() throws IOException {
+      return super.serializer.getAsString();
     }
   }
 
   public Request prepare() throws IOException {
-    MockRequest request = new MockRequest(out);
+    MockRequest request = new MockRequest(new HttpTransport("http://example.com"));
     lastRequest = request;
     numRequests++;
 
