@@ -19,30 +19,22 @@ public class DatadogReporterFactoryTest {
   }
 
   @Test
-  public void testExactFilterMatch() {
-    MetricFilter metricFilter = createMetricFilter(ImmutableSet.of("foobar"), ImmutableSet.of());
-    // our includes filter should always accept an exact match
-    Assertions.assertThat(metricFilter.matches("foobar", mock(Metric.class))).isTrue();
+  public void testRegexFilterMatch() {
+    ImmutableSet<String> includesSet = ImmutableSet.of();
+    ImmutableSet<String> excludesSet = ImmutableSet.of("foo.*");
+    MetricFilter defaultMetricFilter = createMetricFilter(includesSet, excludesSet, false);
+    MetricFilter regexMetricFilter = createMetricFilter(includesSet, excludesSet, true);
+    // "foobar" should be correctly rejected by the exclusion expression "foo.*" when using the regex filter but allowed
+    // under the default filter (since it does not match the string exactly)
+    Assertions.assertThat(defaultMetricFilter.matches("foobar", mock(Metric.class))).isTrue();
+    Assertions.assertThat(regexMetricFilter.matches("foobar", mock(Metric.class))).isFalse();
   }
 
-  @Test
-  public void testPartialFilterMatch() {
-    MetricFilter metricFilter = createMetricFilter(ImmutableSet.of("foo"), ImmutableSet.of());
-    // a provided includes filter of "foo" should not pass the partial match "foobar"
-    Assertions.assertThat(metricFilter.matches("foobar", mock(Metric.class))).isFalse();
-  }
-
-  @Test
-  public void testPartialRegexFilterMatch() {
-    MetricFilter metricFilter = createMetricFilter(ImmutableSet.of("foo.*"), ImmutableSet.of());
-    // a provided regex expression "foo.*" should pass the partial match "foobar"
-    Assertions.assertThat(metricFilter.matches("foobar", mock(Metric.class))).isTrue();
-  }
-
-  private static MetricFilter createMetricFilter(ImmutableSet includesSet, ImmutableSet excludesSet) {
+  private static MetricFilter createMetricFilter(ImmutableSet includesSet, ImmutableSet excludesSet, boolean useRegex) {
     DatadogReporterFactory reporterFactory = mock(DatadogReporterFactory.class);
     when(reporterFactory.getIncludes()).thenReturn(includesSet);
     when(reporterFactory.getExcludes()).thenReturn(excludesSet);
+    when(reporterFactory.useRegexFilters()).thenReturn(useRegex);
     when(reporterFactory.getFilter()).thenCallRealMethod();
     return reporterFactory.getFilter();
   }
