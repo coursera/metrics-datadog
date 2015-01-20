@@ -43,7 +43,8 @@ public class DatadogReporterFactory extends BaseReporterFactory {
 
   @Override
   public MetricFilter getFilter() {
-    return (useRegexFilters() ? new RegexMetricFilter(getIncludes(), getExcludes()) : super.getFilter());
+    return (useRegexFilters() ?
+        new RegexMetricFilter(getIncludes(), getExcludes()) : super.getFilter());
   }
 
   public boolean useRegexFilters() {

@@ -11,14 +11,15 @@ public class RegexMetricFilter implements MetricFilter {
   ImmutableSet<String> includesExpressions;
   ImmutableSet<String> excludesExpressions;
 
-  public RegexMetricFilter(ImmutableSet<String> includesExpressions, ImmutableSet<String> excludesExpressions) {
+  public RegexMetricFilter(ImmutableSet<String> includesExpressions,
+                           ImmutableSet<String> excludesExpressions) {
     this.includesExpressions = includesExpressions;
     this.excludesExpressions = excludesExpressions;
   }
 
   public boolean matches(final String name, final Metric metric) {
-    // based off of the io.dropwizard.metrics.BaseReporterFactory implementation, but perform regex checks instead
-    // of relying on Set.contains()
+    // based off of the io.dropwizard.metrics.BaseReporterFactory implementation, but perform regex
+    // checks instead of relying on Set.contains()
     boolean useIncl = !includesExpressions.isEmpty();
     boolean useExcl = !excludesExpressions.isEmpty();
 
