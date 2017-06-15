@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Response;
 import org.apache.http.entity.ContentType;
@@ -132,20 +133,35 @@ public class HttpTransport implements Transport {
 
       Response response = this.transport.executor.execute(request);
 
-      long elapsed = System.currentTimeMillis() - start;
+      final long elapsed = System.currentTimeMillis() - start;
 
-      if (LOG.isDebugEnabled()) {
-        HttpResponse httpResponse = response.returnResponse();
-        StringBuilder sb = new StringBuilder();
+      if (LOG.isWarnEnabled()) {
+        response.handleResponse(new ResponseHandler<Object>() {
+          public Object handleResponse(HttpResponse response) throws IOException {
+            int  statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode >= 400) {
+              LOG.warn(getLogMessage("Failure sending metrics to Datadog: ", response));
+            } else {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug(getLogMessage("Sent metrics to Datadog: ", response));
+              }
+            }
+            return null;
+          }
 
-        sb.append("Sent metrics to Datadog: ");
-        sb.append("  Timing: ").append(elapsed).append(" ms\n");
-        sb.append("  Status: ").append(httpResponse.getStatusLine().getStatusCode()).append("\n");
+          private String getLogMessage(String headline, HttpResponse response) throws IOException {
+            StringBuilder sb = new StringBuilder();
 
-        String content = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
-        sb.append("  Content: ").append(content);
+            sb.append(headline);
+            sb.append("  Timing: ").append(elapsed).append(" ms\n");
+            sb.append("  Status: ").append(response.getStatusLine().getStatusCode()).append("\n");
 
-        LOG.debug(sb.toString());
+            String content = EntityUtils.toString(response.getEntity(), "UTF-8");
+            sb.append("  Content: ").append(content);
+            return sb.toString();
+          }
+
+        });
       } else {
         response.discardContent();
       }
