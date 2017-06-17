@@ -136,9 +136,9 @@ public class HttpTransport implements Transport {
       final long elapsed = System.currentTimeMillis() - start;
 
       if (LOG.isWarnEnabled()) {
-        response.handleResponse(new ResponseHandler<Object>() {
-          public Object handleResponse(HttpResponse response) throws IOException {
-            int  statusCode = response.getStatusLine().getStatusCode();
+        response.handleResponse(new ResponseHandler<Void>() {
+          public Void handleResponse(HttpResponse response) throws IOException {
+            int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode >= 400) {
               LOG.warn(getLogMessage("Failure sending metrics to Datadog: ", response));
             } else {
