@@ -157,8 +157,8 @@ public class UdpTransport implements Transport {
   static Callable<InetSocketAddress> staticAddressResolver(final String host, final int port) {
     try {
       return NonBlockingStatsDClient.staticAddressResolution(host, port);
-    } catch(final Exception e){
-      LOG.error("Error during constructing statsd address resolutor.", e);
+    } catch(final Exception e) {
+      LOG.error("Error during constructing statsd address resolver.", e);
       throw new RuntimeException(e);
     }
   }
