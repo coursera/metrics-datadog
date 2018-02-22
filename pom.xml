@@ -54,16 +54,16 @@
         </contributor>
     </contributors>
     <properties>
-        <metrics.version>3.1.1</metrics.version>
-        <jackson.version>2.4.2</jackson.version>
-        <dropwizard.version>0.9.1</dropwizard.version>
+        <metrics.version>3.2.1</metrics.version>
+        <jackson.databind.version>2.7.9.1</jackson.databind.version>
+        <dropwizard.version>1.0.8</dropwizard.version>
     </properties>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.1</version>
+                <version>3.6.2</version>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
@@ -153,7 +153,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
+                <version>${jackson.databind.version}</version>
            </dependency>
             <dependency>
                 <groupId>com.datadoghq</groupId>
