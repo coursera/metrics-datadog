@@ -31,7 +31,9 @@ public class HttpTransport implements Transport {
 
   private static final Logger LOG = LoggerFactory.getLogger(HttpTransport.class);
 
-  private final static String BASE_URL = "https://api.datadoghq.com/api/v1";
+  private final static String BASE_URL_US = "https://api.datadoghq.com/api/v1";
+  private final static String BASE_URL_EU = "https://api.datadoghq.eu/api/v1";
+
   private final String seriesUrl;
   private final int connectTimeout;     // in milliseconds
   private final int socketTimeout;      // in milliseconds
@@ -44,8 +46,10 @@ public class HttpTransport implements Transport {
                         int socketTimeout,
                         HttpHost proxy,
                         Executor executor,
-                        boolean useCompression) {
-    this.seriesUrl = String.format("%s/series?api_key=%s", BASE_URL, apiKey);
+                        boolean useCompression,
+                        boolean euSite) {
+    final String baseUrl = euSite ? BASE_URL_EU: BASE_URL_US;
+    this.seriesUrl = String.format("%s/series?api_key=%s", baseUrl, apiKey);
     this.connectTimeout = connectTimeout;
     this.socketTimeout = socketTimeout;
     this.proxy = proxy;
@@ -64,6 +68,7 @@ public class HttpTransport implements Transport {
     HttpHost proxy;
     Executor executor;
     boolean useCompression = false;
+    boolean euSite = false;
 
     public Builder withApiKey(String key) {
       this.apiKey = key;
@@ -95,8 +100,16 @@ public class HttpTransport implements Transport {
       return this;
     }
 
+    /**
+     * Send Metrics to Datadog EU site instead of US.
+     */
+    public Builder withEuSite() {
+      this.euSite = true;
+      return this;
+    }
+
     public HttpTransport build() {
-      return new HttpTransport(apiKey, connectTimeout, socketTimeout, proxy, executor, useCompression);
+      return new HttpTransport(apiKey, connectTimeout, socketTimeout, proxy, executor, useCompression, euSite);
     }
   }
 
