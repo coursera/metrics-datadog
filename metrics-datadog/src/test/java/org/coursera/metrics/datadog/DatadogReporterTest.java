@@ -153,6 +153,17 @@ public class DatadogReporterTest {
   }
 
   @Test
+  public void reportsBooleanGaugeValues() throws Exception {
+    reporter.report(map("gauge", gauge(true)),
+            this.<Counter>map(),
+            this.<Histogram>map(),
+            this.<Meter>map(),
+            this.<Timer>map());
+
+    gaugeTestHelper("gauge", 1, timestamp, HOST, tags);
+  }
+
+  @Test
   public void reportHandlesGaugeMetricExceptions() throws Exception {
     final Gauge gauge = mock(Gauge.class);
     when(gauge.getValue()).thenThrow(new IllegalArgumentException("error occurred during retrieving value"));

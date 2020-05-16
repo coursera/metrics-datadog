@@ -222,6 +222,8 @@ public class DatadogReporter extends ScheduledReporter {
   private Number toNumber(Object o) {
     if (o instanceof Number) {
       return (Number) o;
+    } else if (o instanceof Boolean) {
+      return ((Boolean) o) ? 1 : 0;
     }
     return null;
   }
