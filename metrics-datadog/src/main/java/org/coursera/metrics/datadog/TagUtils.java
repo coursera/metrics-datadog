@@ -33,11 +33,15 @@ class TagUtils {
 
     Map<String, String> map = new HashMap<String, String>();
     for (String tag : newTags) {
-      String[] strs = tag.split(":");
-      if (strs.length != 2) {
+
+      int delimiterIndex = tag.indexOf(":");
+      int tagLength = tag.length();
+      if (tagLength < 1 || delimiterIndex <= 0 || delimiterIndex == tagLength - 1) {
         LOG.warn("Invalid tag: " + tag);
       } else {
-        map.put(strs[0], strs[1]);
+        String key = tag.substring(0, delimiterIndex);
+        String value = tag.substring(delimiterIndex + 1);
+        map.put(key, value);
       }
     }
 
