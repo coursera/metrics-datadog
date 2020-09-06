@@ -3,17 +3,17 @@
 `metrics-datadog` is a simple reporting bridge between [Dropwizard Metrics](http://metrics.dropwizard.io/) and the [Datadog](https://www.datadoghq.com/) service. It includes support for:
 
 * Datadog's tagging feature
-* Metric reporting via either UDP (dogstatsd) or the Datadog HTTP API
+* Metric reporting via the Datadog HTTP API, UDP or UDS. 
 * Tight integration with the Dropwizard framework via the `dropwizard-metrics-datadog` sub-project.
 
-## UDP vs HTTP
+## HTTP vs UDP vs UDS
 
 Datadog supports two main metric ingestion methods:
 
 - POSTing metrics via their [HTTP API](http://docs.datadoghq.com/api/#metrics-post)
-- Sending metrics via UDP (using a statsd-like protocol) to the local [dogstatsd](http://docs.datadoghq.com/guides/dogstatsd/) agent
+- Sending metrics via UDP or UDS (using a statsd-like protocol) to the local [dogstatsd](http://docs.datadoghq.com/guides/dogstatsd/) agent
 
-Datadog recommends the `dogstatsd` UDP-based approach, but some may prefer the HTTP-based approach
+Datadog recommends the `dogstatsd` UDS-based approach, but some may prefer the HTTP-based approach
 for various reasons e.g. a general adversity to running agents, the additional memory required by the agent and
 forwarder (though this is configurable), stability, security or other environment/platform-level
 conflicts.
@@ -21,7 +21,7 @@ conflicts.
 Note that, in the event of a delivery failure, the HTTP-based transport does not buffer metrics in
 memory. It will attempt a handful of retries and then give up. Hence, when faced with an extended network
 partition window or a Datadog ingestion outage, some metrics will certainly be lost using this transport.
-That said, note that the UDP-based reporter also cannot buffer metrics forever due
+That said, note that the UDP/UDS-based reporter also cannot buffer metrics forever due
 to memory constraints.
 
 ## Usage
@@ -51,6 +51,17 @@ Example of using UDP transport:
 ~~~scala
 ...
 val udpTransport = new UdpTransport.Builder().build()
+val reporter = 
+    ...
+    .withTransport(udpTransport)
+    ...
+~~~
+
+Example of using UDS transport:
+
+~~~scala
+...
+val udpTransport = new UdpTransport.Builder().withStatsdHost("/var/run/datadog/dsd.socket").withPort(0).build()
 val reporter = 
     ...
     .withTransport(udpTransport)
@@ -164,6 +175,20 @@ metrics:
         prefix:                             # Optional. Default is (empty)
         statsdHost: "localhost"             # Optional. Default is "localhost"
         port: 8125                          # Optional. Default is 8125
+~~~
+
+UDS Transport:
+
+~~~yaml
+metrics:
+  frequency: 1 minute                              # Default is 1 second.
+  reporters:
+    - type: datadog
+      transport:
+        type: udp
+        prefix:                                    # Optional. Default is (empty)
+        statsdHost: "/var/run/datadog/dsd.socket"
+        port: 0
 ~~~
 
 #### Filtering
